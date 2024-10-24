@@ -1,7 +1,11 @@
 import 'package:delivery/pages/UserSend.dart';
+import 'package:delivery/pages/login.dart';
 import 'package:flutter/material.dart';
+
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  const ProfilePage({super.key, required this.userId}); // รับ userId ผ่าน constructor
+
+  final String userId; // เพิ่มตัวแปรเพื่อเก็บ userId
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -15,7 +19,6 @@ class _ProfilePageState extends State<ProfilePage> {
   final String _password = '********'; // ไม่แสดงรหัสผ่านในโปรไฟล์
   final String _address = '123 ซอย 1';
   final String _location = '13.7563° N, 100.5018° E'; // พิกัดตัวอย่าง
-  final String userId = '12345'; // เพิ่ม userId สำหรับส่งค่าไปยัง UserSendPage
 
   int _selectedIndex = 0; // ตัวแปรสำหรับติดตาม index ของ Bottom Navigation Bar
 
@@ -25,19 +28,35 @@ class _ProfilePageState extends State<ProfilePage> {
     });
 
     // นำทางไปยังหน้าที่เลือก พร้อมส่ง userId
-    if (index == 0 || index == 1 || index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => UserSendPage(userId: userId)), // ส่งค่า userId ไปยัง UserSendPage
-      );
-    }
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UserSendPage(userId: widget.userId), // ส่งค่า userId ไปยัง UserSendPage
+      ),
+    );
   }
 
+  void _logout() {
+    // นำทางไปยังหน้า LoginPage
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('โปรไฟล์ของฉัน'),
+        title: const Text('Delivaery',          
+        style: TextStyle(color: Colors.purple),
+        ),
+        backgroundColor: const Color.fromARGB(255, 56, 238, 15),
+                actions: [
+          IconButton(
+            icon: const Icon(Icons.logout), // ใช้ icon logout
+            onPressed: _logout, // เรียกฟังก์ชัน logout
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -71,12 +90,12 @@ class _ProfilePageState extends State<ProfilePage> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.amber, // ใช้ backgroundColor แทน primary
+                backgroundColor: Colors.amber,
                 padding: const EdgeInsets.symmetric(horizontal: 60.0, vertical: 15.0),
               ),
               child: const Text(
                 'แก้ไขโปรไฟล์',
-                style: TextStyle(color: Colors.black), // เปลี่ยนสีข้อความเป็นสีดำเพื่อให้ตัดกับสีพื้นหลัง
+                style: TextStyle(color: Colors.black),
               ),
             ),
           ],
@@ -90,8 +109,8 @@ class _ProfilePageState extends State<ProfilePage> {
             label: 'หน้าแรก',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'ประวัติ',
+            icon: Icon(Icons.call_received_outlined),
+            label: 'รับสินค้า',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.delivery_dining),
@@ -102,9 +121,9 @@ class _ProfilePageState extends State<ProfilePage> {
             label: 'โปรไฟล์',
           ),
         ],
-        currentIndex: _selectedIndex, // เปลี่ยนตามสถานะที่เลือก
+        currentIndex: _selectedIndex,
         selectedItemColor: Colors.purple,
-        onTap: _onItemTapped, // ฟังก์ชันที่ใช้จัดการการเลือก
+        onTap: _onItemTapped,
         backgroundColor: const Color.fromARGB(255, 56, 238, 15),
         unselectedItemColor: Colors.grey,
       ),
@@ -114,9 +133,9 @@ class _ProfilePageState extends State<ProfilePage> {
   // ฟังก์ชันสร้าง Card สำหรับข้อมูล
   Widget _buildInfoCard(String title, String value) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8.0), // ระยะห่างระหว่าง Card
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: Padding(
-        padding: const EdgeInsets.all(16.0), // Padding ภายใน Card
+        padding: const EdgeInsets.all(16.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [

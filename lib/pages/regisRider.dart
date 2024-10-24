@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class RegisRiderPage extends StatefulWidget {
-  const RegisRiderPage({super.key});
 
   @override
   State<RegisRiderPage> createState() => _RegisRiderPageState();
@@ -16,22 +15,6 @@ class _RegisRiderPageState extends State<RegisRiderPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _licensePlateController = TextEditingController();
-
-  int _selectedIndex = 0; // ตัวแปรสำหรับติดตาม index ของ Bottom Navigation Bar
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-
-    // นำทางไปยังหน้าที่เลือก
-    if (index == 3) { // ถ้าเลือกไอคอนโปรไฟล์ (index = 3)
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const ProfilePage()), // นำทางไปหน้า ProfilePage
-      );
-    }
-  }
 
   // ฟังก์ชันเพื่อแสดง AlertDialog
   void _showDialog(String title, String message) {

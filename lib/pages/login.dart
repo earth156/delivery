@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:delivery/pages/regisCus.dart';
 import 'package:delivery/pages/regisRider.dart';
-import 'package:delivery/pages/userSend.dart'; // หน้า UserSendPage
+import 'package:delivery/pages/userSend.dart';
 import 'package:delivery/model/users_login.dart';
 
 class LoginPage extends StatefulWidget {
@@ -77,7 +77,7 @@ class _LoginPageState extends State<LoginPage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const RegisRiderPage(),
+                            builder: (context) => RegisRiderPage(),
                         ),
                       );
                     },
@@ -131,13 +131,12 @@ class _LoginPageState extends State<LoginPage> {
         final responseData = jsonDecode(response.body);
 
         // ตรวจสอบค่า null และแปลงให้เป็น String
-        final userId = responseData['user_id']?.toString() ?? ''; 
-        final userType = responseData['type']?.toString() ?? ''; 
+        final userId = responseData['user_id']?.toString() ?? '';
+        final userType = responseData['type']?.toString() ?? '';
 
         if (responseData.containsKey('message') &&
             responseData.containsKey('user_id') &&
             responseData.containsKey('type')) {
-          
           final userLogin = UserLogin.fromJson(responseData);
 
           // เช็คประเภทของผู้ใช้
@@ -145,14 +144,16 @@ class _LoginPageState extends State<LoginPage> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => UserSendPage(userId: userId), // ส่ง userId ที่ไม่เป็น null
+                builder: (context) =>
+                    UserSendPage(userId: userId), // ส่ง userId ที่ไม่เป็น null
               ),
             );
           } else if (userLogin.type == 'rider') {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => RiderPage(userId: userId), // ส่ง userId ที่ไม่เป็น null
+                builder: (context) =>
+                    RiderPage(userId: userId), // ส่ง userId ที่ไม่เป็น null
               ),
             );
           } else {

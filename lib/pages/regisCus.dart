@@ -1,9 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart' as gmaps; // ใช้ as prefix
-import 'package:geolocator/geolocator.dart';
-import 'package:latlong2/latlong.dart' as latlong;
 import 'package:http/http.dart' as http;
+import 'package:latlong2/latlong.dart';
 import 'dart:convert';
+import 'gps.dart'; // เปลี่ยนชื่อไฟล์ให้ตรงตามที่คุณใช้
 
 class RegisCutPage extends StatefulWidget {
   const RegisCutPage({super.key});
@@ -19,37 +20,8 @@ class _RegisCutPageState extends State<RegisCutPage> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _coordinatesController = TextEditingController();
-
-  latlong.LatLng? _selectedLocation;
-
-  Future<void> _getCurrentLocation() async {
-    try {
-      Position position = await _determinePosition();
-      setState(() {
-        _selectedLocation = latlong.LatLng(position.latitude, position.longitude);
-        _coordinatesController.text = '${position.latitude}, ${position.longitude}';
-      });
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    }
-  }
-
-  void _openMap() async {
-    latlong.LatLng? result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const MapScreen(),
-      ),
-    );
-
-    if (result != null) {
-      setState(() {
-        _selectedLocation = result;
-        _coordinatesController.text = '${result.latitude}, ${result.longitude}';
-      });
-    }
-  }
+  
+  String? _profileImage; // ตัวแปรสำหรับเก็บ URL ของรูปโปรไฟล์
 
   Future<void> _register() async {
     String name = _nameController.text;
@@ -103,8 +75,8 @@ class _RegisCutPageState extends State<RegisCutPage> {
       'password': password,
       'address': address,
       'gps': coordinates,
+      'profile': _profileImage, // ส่ง URL รูปโปรไฟล์ไปด้วย
       'car_reg': null,
-      'profile': null,
       'type': phone.isNotEmpty ? 'user' : 'rider',
     };
 
@@ -158,6 +130,35 @@ class _RegisCutPageState extends State<RegisCutPage> {
     _confirmPasswordController.clear();
     _addressController.clear();
     _coordinatesController.clear();
+    setState(() {
+      _profileImage = null; // เคลียร์ URL รูปโปรไฟล์
+    });
+  }
+
+  // ฟังก์ชันสำหรับคลิกไอคอนแผนที่
+  void _onMapIconPressed() async {
+    final LatLng? selectedLocation = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const GPSandMapPage(),
+      ),
+    );
+
+    // ถ้าได้พิกัดกลับมา ให้แสดงในช่องพิกัด
+    if (selectedLocation != null) {
+      _coordinatesController.text =
+          '${selectedLocation.latitude}, ${selectedLocation.longitude}';
+    }
+  }
+
+  // ฟังก์ชันสำหรับเลือกโปรไฟล์ภาพ
+  void _onProfileImageTap() async {
+    // ใช้ ImagePicker เพื่อเลือกภาพจาก gallery
+    // ในกรณีนี้ คุณสามารถทำการเลือกภาพและเก็บ URL ไว้ใน _profileImage
+    // ตัวอย่าง:
+    // final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    // setState(() {
+    //   _profileImage = pickedFile?.path;
+    // });
   }
 
   @override
@@ -188,34 +189,34 @@ class _RegisCutPageState extends State<RegisCutPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 20.0),
+            const SizedBox(height: 10.0),
             TextField(
               controller: _phoneController,
               decoration: const InputDecoration(
-                labelText: 'หมายเลขโทรศัพท์',
+                labelText: 'เบอร์โทรศัพท์',
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
             ),
-            const SizedBox(height: 20.0),
+            const SizedBox(height: 10.0),
             TextField(
               controller: _passwordController,
               decoration: const InputDecoration(
                 labelText: 'รหัสผ่าน',
                 border: OutlineInputBorder(),
               ),
-              obscureText: true, // ซ่อนรหัสผ่าน
+              obscureText: true,
             ),
-            const SizedBox(height: 20.0),
+            const SizedBox(height: 10.0),
             TextField(
               controller: _confirmPasswordController,
               decoration: const InputDecoration(
                 labelText: 'ยืนยันรหัสผ่าน',
                 border: OutlineInputBorder(),
               ),
-              obscureText: true, // ซ่อนรหัสผ่าน
+              obscureText: true,
             ),
-            const SizedBox(height: 20.0),
+            const SizedBox(height: 10.0),
             TextField(
               controller: _addressController,
               decoration: const InputDecoration(
@@ -223,7 +224,7 @@ class _RegisCutPageState extends State<RegisCutPage> {
                 border: OutlineInputBorder(),
               ),
             ),
-            const SizedBox(height: 20.0),
+            const SizedBox(height: 10.0),
             Row(
               children: [
                 Expanded(
@@ -233,71 +234,45 @@ class _RegisCutPageState extends State<RegisCutPage> {
                       labelText: 'พิกัด (latitude, longitude)',
                       border: OutlineInputBorder(),
                     ),
-                    readOnly: true, // ทำให้ไม่สามารถแก้ไขพิกัดได้โดยตรง
+                    readOnly: true,
                   ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.map),
-                  onPressed: _openMap, // เปิดหน้าจอแผนที่
-                ),
-                IconButton(
-                  icon: const Icon(Icons.my_location),
-                  onPressed: _getCurrentLocation, // แสดงพิกัดปัจจุบัน
+                  onPressed: _onMapIconPressed, // เรียกฟังก์ชันแสดงแผนที่
                 ),
               ],
             ),
-            const SizedBox(height: 30.0),
+            const SizedBox(height: 20.0),
+            // ช่องสำหรับรูปโปรไฟล์
+            GestureDetector(
+              onTap: _onProfileImageTap, // เรียกฟังก์ชันเมื่อคลิก
+              child: ClipOval(
+                child: Container(
+                  width: 100.0,
+                  height: 100.0,
+                  color: Colors.grey[300], // สีพื้นหลังสำหรับรูปโปรไฟล์
+                  child: _profileImage != null
+                      ? Image.file(
+                          File(_profileImage!), // แสดงรูปโปรไฟล์จากไฟล์
+                          fit: BoxFit.cover,
+                        )
+                      : const Icon(
+                          Icons.person,
+                          size: 50,
+                          color: Colors.white,
+                        ), // แสดงไอคอนผู้ใช้
+                ),
+              ),
+            ),
+            const SizedBox(height: 20.0),
             ElevatedButton(
-              onPressed: _register, // เรียกฟังก์ชัน _register
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple,
-                padding: const EdgeInsets.symmetric(horizontal: 60.0, vertical: 15.0),
-              ),
-              child: const Text(
-                'สมัครสมาชิก',
-                style: TextStyle(color: Colors.white),
-              ),
+              onPressed: _register,
+              child: const Text('สมัครสมาชิก'),
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Future<Position> _determinePosition() async {
-    bool serviceEnabled;
-    LocationPermission permission;
-
-    serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      return Future.error('Location services are disabled.');
-    }
-
-    permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      return Future.error(
-          'Location permissions are permanently denied, we cannot request permissions.');
-    }
-
-    return await Geolocator.getCurrentPosition();
-  }
-}
-
-class MapScreen extends StatelessWidget {
-  const MapScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('เลือกตำแหน่ง')),
-      body: const Center(child: Text('แสดงแผนที่ที่นี่')),
     );
   }
 }

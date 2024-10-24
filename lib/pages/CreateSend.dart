@@ -1,7 +1,9 @@
 import 'package:delivery/model/ShowUser.dart';
+import 'package:delivery/pages/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
 
 class CreateSendPage extends StatefulWidget {
   final String userId;
@@ -160,8 +162,11 @@ class _CreateSendPageState extends State<CreateSendPage> {
             const SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('ฟังก์ชันนี้ยังไม่พร้อมใช้งาน')),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CameraPage(userId: widget.userId), // ส่ง userId
+                  ),
                 );
               },
               style: ElevatedButton.styleFrom(

@@ -1,46 +1,44 @@
 import 'package:delivery/pages/UserSend.dart';
+import 'package:delivery/pages/login.dart';
 import 'package:delivery/pages/profile.dart';
 import 'package:flutter/material.dart';
 
 class CheckRiderPage extends StatefulWidget {
-  const CheckRiderPage({super.key});
+  final String userId;
+  const CheckRiderPage({super.key, required this.userId});
 
   @override
   State<CheckRiderPage> createState() => _CheckRiderPageState();
 }
 
 class _CheckRiderPageState extends State<CheckRiderPage> {
-    final List<String> _itemList = []; // รายการส่งสินค้าที่จะแสดง
+  final List<String> _itemList = []; // รายการส่งสินค้าที่จะแสดง
   int _selectedIndex = 0; // ตัวแปรสำหรับติดตาม index ของ Bottom Navigation Bar
- final String userId = '12345'; // เพิ่ม userId สำหรับส่งค่าไปยัง UserSendPage
- 
+
   // ฟังก์ชันสำหรับเปลี่ยนหน้าเมื่อมีการเลือกเมนู
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
-        // นำทางไปยังหน้าที่เลือก
-    if (index == 0) { // ถ้าเลือกไอคอนโปรไฟล์ (index = 3)
+    
+    // นำทางไปยังหน้าที่เลือก
+    if (index == 0) { // หน้า UserSend
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => UserSendPage(userId: userId)), // นำทางไปหน้า ProfilePage
+        MaterialPageRoute(
+          builder: (context) => UserSendPage(userId: widget.userId), // ส่ง userId ที่รับจาก constructor
+        ),
       );
     }
-    //   if (index == 1) { // ถ้าเลือกไอคอนโปรไฟล์ (index = 3)
-    //   Navigator.push(
-    //     context,
-    //     MaterialPageRoute(builder: (context) => const ProfilePage()), // นำทางไปหน้า ProfilePage
-    //   );
-    // }
-    // }
-    if (index == 3) { // ถ้าเลือกไอคอนโปรไฟล์ (index = 3)
+    if (index == 3) { // หน้า ProfilePage
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ProfilePage()), // นำทางไปหน้า ProfilePage
+        MaterialPageRoute(
+          builder: (context) => ProfilePage(userId: widget.userId), // ส่ง userId ที่รับจาก constructor
+        ),
       );
     }
   }
-
 
   // รายการส่งของไรเดอร์
   final List<Map<String, String>> _deliveries = [
@@ -62,14 +60,28 @@ class _CheckRiderPageState extends State<CheckRiderPage> {
       'address': '789 ซอย 3, เขต 3',
       'time': '15:45 น.',
     },
-    // คุณสามารถเพิ่มข้อมูลของไรเดอร์อื่นๆ ได้ที่นี่
   ];
-
+  void _logout() {
+    // นำทางไปยังหน้า LoginPage
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ตรวจสอบสถานะการส่งของไรเดอร์'),
+        title: const Text('Delivaery',          
+        style: TextStyle(color: Colors.purple),
+        ),
+        backgroundColor: const Color.fromARGB(255, 56, 238, 15),
+                actions: [
+          IconButton(
+            icon: const Icon(Icons.logout), // ใช้ icon logout
+            onPressed: _logout, // เรียกฟังก์ชัน logout
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -80,7 +92,7 @@ class _CheckRiderPageState extends State<CheckRiderPage> {
           },
         ),
       ),
-            bottomNavigationBar: BottomNavigationBar(
+      bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -88,8 +100,8 @@ class _CheckRiderPageState extends State<CheckRiderPage> {
             label: 'หน้าแรก',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'ประวัติ',
+            icon: Icon(Icons.call_received_outlined),
+            label: 'รับสินค้า',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.delivery_dining),

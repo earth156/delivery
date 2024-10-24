@@ -1,6 +1,9 @@
+
 import 'package:delivery/pages/CreateSend.dart';
 import 'package:delivery/pages/checkrider.dart';
+import 'package:delivery/pages/login.dart';
 import 'package:delivery/pages/profile.dart';
+import 'package:delivery/pages/receive.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -50,12 +53,17 @@ class _UserSendPageState extends State<UserSendPage> {
     if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const CheckRiderPage()),
+        MaterialPageRoute(builder: (context) => CheckRiderPage(userId: widget.userId)),
       );
     } else if (index == 3) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ProfilePage()),
+        MaterialPageRoute(builder: (context) => ProfilePage(userId: widget.userId)),
+      );
+    } else if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ReceivePage(userId: widget.userId)),
       );
     }
   }
@@ -67,21 +75,37 @@ class _UserSendPageState extends State<UserSendPage> {
     );
   }
 
+  void _logout() {
+    // นำทางไปยังหน้า LoginPage
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Deliverey',style: TextStyle(color: Colors.purple),),
+        title: const Text(
+          'Delivery',
+          style: TextStyle(color: Colors.purple),
+        ),
         backgroundColor: const Color.fromARGB(255, 56, 238, 15),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout), // ใช้ icon logout
+            onPressed: _logout, // เรียกฟังก์ชัน logout
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // เพิ่มหัวข้อด้านบนรายการ
             const Text(
               'รายการส่งสินค้า',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
                 color: Colors.purple,
@@ -89,40 +113,50 @@ class _UserSendPageState extends State<UserSendPage> {
             ),
             const SizedBox(height: 16.0), // Space between title and list
             Expanded(
-              child: ListView.builder(
-                itemCount: _itemList.length,
-                itemBuilder: (context, index) {
-                  final item = _itemList[index];
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: ListTile(
-                      title: Text(item['details'] ?? 'ไม่มีรายละเอียด', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'ผู้รับ: ${item['user_receive_name'] ?? 'ไม่ระบุ'}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                    child: ListView.builder(
+                      itemCount: _itemList.length,
+                      itemBuilder: (context, index) {
+                        final item = _itemList[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: ListTile(
+                            title: Text(item['details'] ?? 'ไม่มีรายละเอียด',
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold)),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'ผู้รับ: ${item['user_receive_name'] ?? 'ไม่ระบุ'}',
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  'ที่อยู่: ${item['user_receive_address'] ?? 'ไม่ระบุ'}',
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                                Text(
+                                  'สถานะ: ${item['status'] ?? 'ไม่ระบุ'}', // เพิ่มการแสดงสถานะ
+                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                                ),
+                              ],
+                            ),
+                            leading:
+                                const Icon(Icons.local_shipping, color: Colors.purple),
                           ),
-                          Text(
-                            'ที่อยู่: ${item['user_receive_address'] ?? 'ไม่ระบุ'}',
-                            style: const TextStyle(color: Colors.grey),
-                          ),
-                        ],
-                      ),
-                      leading: const Icon(Icons.local_shipping, color: Colors.purple),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ),
+                  ),
+
             const SizedBox(height: 16.0), // Space between list and button
             ElevatedButton(
               onPressed: _goToCreateSendPage,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.purple,
-                padding: const EdgeInsets.symmetric(horizontal: 60.0, vertical: 15.0),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 60.0, vertical: 15.0),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30)),
               ),
               child: const Text(
                 'สร้างรายการส่ง',
@@ -140,8 +174,8 @@ class _UserSendPageState extends State<UserSendPage> {
             label: 'หน้าแรก',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: 'ประวัติ',
+            icon: Icon(Icons.call_received_outlined),
+            label: 'รับสินค้า',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.delivery_dining),

@@ -20,7 +20,8 @@ class _RegisCutPageState extends State<RegisCutPage> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _coordinatesController = TextEditingController();
-  
+  final TextEditingController _carRegController = TextEditingController(); // ตัวแปรสำหรับเลขทะเบียนรถ
+
   String? _profileImage; // ตัวแปรสำหรับเก็บ path ของรูปโปรไฟล์
 
   Future<void> _register() async {
@@ -30,6 +31,7 @@ class _RegisCutPageState extends State<RegisCutPage> {
     String confirmPassword = _confirmPasswordController.text;
     String address = _addressController.text;
     String coordinates = _coordinatesController.text;
+    String carReg = _carRegController.text; // รับค่าเลขทะเบียนรถ
 
     // ตรวจสอบข้อมูลกรอกให้ครบ
     if (name.isEmpty || phone.isEmpty || password.isEmpty || confirmPassword.isEmpty || address.isEmpty || coordinates.isEmpty) {
@@ -80,6 +82,7 @@ class _RegisCutPageState extends State<RegisCutPage> {
     request.fields['password'] = password;
     request.fields['address'] = address;
     request.fields['gps'] = coordinates;
+    request.fields['car_reg'] = carReg; // ส่งค่าเลขทะเบียนรถ
 
     // ถ้ามีไฟล์โปรไฟล์ที่เลือกให้เพิ่มลงใน request
     if (_profileImage != null) {
@@ -135,6 +138,7 @@ class _RegisCutPageState extends State<RegisCutPage> {
     _confirmPasswordController.clear();
     _addressController.clear();
     _coordinatesController.clear();
+    _carRegController.clear(); // เคลียร์เลขทะเบียนรถ
     setState(() {
       _profileImage = null; // เคลียร์ URL รูปโปรไฟล์
     });
@@ -216,31 +220,31 @@ class _RegisCutPageState extends State<RegisCutPage> {
             TextField(
               controller: _passwordController,
               decoration: const InputDecoration(labelText: 'รหัสผ่าน'),
-              obscureText: false, // แสดงรหัสผ่าน
+              obscureText: true,
             ),
             TextField(
               controller: _confirmPasswordController,
               decoration: const InputDecoration(labelText: 'ยืนยันรหัสผ่าน'),
-              obscureText: false, // แสดงรหัสผ่าน
+              obscureText: true,
             ),
             TextField(
               controller: _addressController,
               decoration: const InputDecoration(labelText: 'ที่อยู่'),
             ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _coordinatesController,
-                    decoration: const InputDecoration(labelText: 'พิกัด GPS'),
-                    readOnly: true,
-                  ),
-                ),
-                IconButton(
+            TextField(
+              controller: _coordinatesController,
+              decoration: InputDecoration(
+                labelText: 'พิกัด GPS',
+                suffixIcon: IconButton(
                   icon: const Icon(Icons.map),
                   onPressed: _onMapIconPressed,
                 ),
-              ],
+              ),
+              readOnly: true,
+            ),
+            TextField(
+              controller: _carRegController,
+              decoration: const InputDecoration(labelText: 'เลขทะเบียนรถ (ถ้ามี)'),
             ),
             const SizedBox(height: 20.0),
             ElevatedButton(

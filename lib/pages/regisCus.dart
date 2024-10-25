@@ -93,10 +93,13 @@ class _RegisCutPageState extends State<RegisCutPage> {
       final response = await request.send();
 
       if (response.statusCode == 200) {
+        final responseData = await response.stream.bytesToString();
+        print(responseData); // แสดงผลการตอบกลับ
         _showSuccessDialog(); // แสดงกล่องข้อความสมัครสมาชิกสำเร็จ
         _clearFields(); // เคลียร์ฟิลด์หลังจากลงทะเบียนสำเร็จ
       } else {
-        throw Exception('ไม่สามารถลงทะเบียนผู้ใช้ได้');
+        final responseData = await response.stream.bytesToString();
+        throw Exception('ไม่สามารถลงทะเบียนผู้ใช้ได้: $responseData');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -215,12 +218,12 @@ class _RegisCutPageState extends State<RegisCutPage> {
             TextField(
               controller: _passwordController,
               decoration: const InputDecoration(labelText: 'รหัสผ่าน'),
-              obscureText: true,
+              obscureText: false, // แสดงรหัสผ่าน
             ),
             TextField(
               controller: _confirmPasswordController,
               decoration: const InputDecoration(labelText: 'ยืนยันรหัสผ่าน'),
-              obscureText: true,
+              obscureText: false, // แสดงรหัสผ่าน
             ),
             TextField(
               controller: _addressController,

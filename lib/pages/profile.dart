@@ -1,61 +1,129 @@
-
 import 'package:delivery/pages/login.dart';
 import 'package:delivery/pages/userSend.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class ShowUser {
+  int userId;
+  String name;
+  String phone;
+  String password;
+  dynamic carReg; // carReg อาจจะเป็น null ก็ได้
+  String profile;
+  String address;
+  String gps;
+  String type;
+
+  ShowUser({
+    required this.userId,
+    required this.name,
+    required this.phone,
+    required this.password,
+    required this.carReg,
+    required this.profile,
+    required this.address,
+    required this.gps,
+    required this.type,
+  });
+
+  factory ShowUser.fromJson(Map<String, dynamic> json) => ShowUser(
+    userId: json["user_id"] ?? 0,
+    name: json["name"] ?? '',
+    phone: json["phone"] ?? '',
+    password: json["password"] ?? '',
+    carReg: json["car_reg"],
+    profile: json["profile"] ?? '',
+    address: json["address"] ?? '',
+    gps: json["gps"] ?? '',
+    type: json["type"] ?? '',
+  );
+
+  Map<String, dynamic> toJson() => {
+    "user_id": userId,
+    "name": name,
+    "phone": phone,
+    "password": password,
+    "car_reg": carReg,
+    "profile": profile,
+    "address": address,
+    "gps": gps,
+    "type": type,
+  };
+}
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key, required this.userId}); // รับ userId ผ่าน constructor
+  const ProfilePage({super.key, required this.userId});
 
-  final String userId; // เพิ่มตัวแปรเพื่อเก็บ userId
+  final String userId;
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // ตัวแปรสำหรับเก็บข้อมูลโปรไฟล์
-  final String _profileImage = 'https://example.com/profile_image.png'; // ลิงค์ภาพโปรไฟล์
-  final String _name = 'นาย A';
-  final String _email = 'email@example.com';
-  final String _password = '********'; // ไม่แสดงรหัสผ่านในโปรไฟล์
-  final String _address = '123 ซอย 1';
-  final String _location = '13.7563° N, 100.5018° E'; // พิกัดตัวอย่าง
+  ShowUser? _userProfile; // เปลี่ยนเป็น ShowUser แทน String หลายตัว
+  int _selectedIndex = 0;
 
-  int _selectedIndex = 0; // ตัวแปรสำหรับติดตาม index ของ Bottom Navigation Bar
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfile();
+  }
+
+  Future<void> _fetchUserProfile() async {
+    try {
+      final response = await http.get(Uri.parse('https://appdeli.onrender.com/userProfile/${widget.userId}'));
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        setState(() {
+          _userProfile = ShowUser.fromJson(jsonResponse);
+        });
+      } else {
+        throw Exception('ไม่สามารถโหลดข้อมูลโปรไฟล์ได้ รหัสสถานะ: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('เกิดข้อผิดพลาดในการดึงข้อมูลโปรไฟล์: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('เกิดข้อผิดพลาดในการดึงข้อมูลโปรไฟล์: $error')),
+      );
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
 
-    // นำทางไปยังหน้าที่เลือก พร้อมส่ง userId
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => UserSendPage(userId: widget.userId), // ส่งค่า userId ไปยัง UserSendPage
+        builder: (context) => UserSendPage(userId: widget.userId),
       ),
     );
   }
 
   void _logout() {
-    // นำทางไปยังหน้า LoginPage
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginPage()),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Delivaery',          
-        style: TextStyle(color: Colors.purple),
+        title: const Text(
+          'Delivery',
+          style: TextStyle(color: Colors.purple),
         ),
         backgroundColor: const Color.fromARGB(255, 56, 238, 15),
-                actions: [
+        actions: [
           IconButton(
-            icon: const Icon(Icons.logout), // ใช้ icon logout
-            onPressed: _logout, // เรียกฟังก์ชัน logout
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
           ),
         ],
       ),
@@ -66,26 +134,24 @@ class _ProfilePageState extends State<ProfilePage> {
             // แสดงภาพโปรไฟล์
             CircleAvatar(
               radius: 60,
-              backgroundImage: NetworkImage(_profileImage), // แสดงภาพจาก URL
+              backgroundImage: NetworkImage(_userProfile?.profile ?? 'https://path_to_your_default_image.png'),
             ),
             const SizedBox(height: 20.0),
             // แสดงข้อมูลใน Card
             Expanded(
               child: ListView(
                 children: [
-                  _buildInfoCard('ชื่อ', _name),
-                  _buildInfoCard('อีเมล', _email),
-                  _buildInfoCard('รหัสผ่าน', _password),
-                  _buildInfoCard('ที่อยู่', _address),
-                  _buildInfoCard('พิกัด', _location),
+                  _buildInfoCard('ชื่อ', _userProfile?.name ?? 'ไม่มีชื่อ'),
+                  _buildInfoCard('โทรศัพท์', _userProfile?.phone ?? 'ไม่มีหมายเลขโทรศัพท์'),
+                  _buildInfoCard('รหัสผ่าน', _userProfile?.password ?? 'ไม่มีรหัสผ่าน'),
+                  _buildInfoCard('ที่อยู่', _userProfile?.address ?? 'ไม่มีที่อยู่'),
+                  _buildInfoCard('พิกัด', _userProfile?.gps ?? 'ไม่มีพิกัด'),
                 ],
               ),
             ),
             const SizedBox(height: 20.0),
-            // ปุ่มแก้ไขโปรไฟล์
             ElevatedButton(
               onPressed: () {
-                // ที่นี่สามารถเพิ่มโค้ดสำหรับแก้ไขข้อมูลโปรไฟล์
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('ฟังก์ชันแก้ไขยังไม่พร้อมใช้งาน')),
                 );
@@ -131,7 +197,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // ฟังก์ชันสร้าง Card สำหรับข้อมูล
   Widget _buildInfoCard(String title, String value) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8.0),

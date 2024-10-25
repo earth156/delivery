@@ -189,9 +189,9 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.purple,
+        selectedItemColor:  const Color.fromARGB(255, 56, 238, 15),
         onTap: _onItemTapped,
-        backgroundColor: const Color.fromARGB(255, 56, 238, 15),
+        backgroundColor: Colors.white,
         unselectedItemColor: Colors.grey,
       ),
     );

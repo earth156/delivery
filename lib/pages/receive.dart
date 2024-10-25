@@ -3,8 +3,8 @@ import 'package:delivery/pages/login.dart';
 import 'package:delivery/pages/profile.dart';
 import 'package:delivery/pages/userSend.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // นำเข้า http
-import 'dart:convert'; // นำเข้า dart:convert
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ReceivePage extends StatefulWidget {
   final String userId;
@@ -47,26 +47,27 @@ class _ReceivePageState extends State<ReceivePage> {
       _selectedIndex = index;
     });
 
-    if (index == 2) {
+    // ใช้ if-else แทน switch
+    if (index == 0) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => CheckRiderPage(userId: widget.userId)),
-      );
-    } else if (index == 3) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => ProfilePage(userId: widget.userId)),
-      );
+        MaterialPageRoute(builder: (context) => UserSendPage(userId: widget.userId)),
+      ).then((_) => _fetchReceivedItems());
     } else if (index == 1) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => ReceivePage(userId: widget.userId)),
-      );
-    } else if (index == 0) {
+      ).then((_) => _fetchReceivedItems());
+    } else if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => UserSendPage(userId: widget.userId)),
-      );
+        MaterialPageRoute(builder: (context) => CheckRiderPage(userId: widget.userId)),
+      ).then((_) => _fetchReceivedItems());
+    } else if (index == 3) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ProfilePage(userId: widget.userId)),
+      ).then((_) => _fetchReceivedItems());
     }
   }
 
@@ -77,80 +78,75 @@ class _ReceivePageState extends State<ReceivePage> {
     );
   }
 
- @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text(
-        'Delivery',
-        style: TextStyle(color: Colors.purple),
-      ),
-      backgroundColor: const Color.fromARGB(255, 56, 238, 15),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.logout),
-          onPressed: _logout,
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          'Delivery',
+          style: TextStyle(color: Colors.purple),
         ),
-      ],
-    ),
-    body: Column( // ใช้ Column เพื่อรวมแถบด้านบนและรายการ
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0), // เพิ่ม padding
-          child: const Text(
-            'รายการรับสินค้า', // ข้อความที่ต้องการแสดง
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.purple,
+        backgroundColor: const Color.fromARGB(255, 56, 238, 15),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: const Text(
+              'รายการรับสินค้า',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.purple,
+              ),
             ),
           ),
-        ),
-        Expanded( // ใช้ Expanded เพื่อให้ ListView เต็มพื้นที่
-          child: ListView.builder(
-            itemCount: _itemList.length,
-            itemBuilder: (context, index) {
-              final item = _itemList[index];
-              return Card(
-                margin: const EdgeInsets.all(8.0),
-                child: ListTile(
-                  leading: const Icon(Icons.inventory),
-                  title: Text(item['details'] ?? 'ไม่มีรายละเอียด'), // แสดงรายละเอียดสินค้า
-                  subtitle: Text('ผู้ส่ง: ${item['user_send_name'] ?? 'ไม่ระบุ'}'), // แสดงชื่อผู้ส่ง
-                  trailing: Text(item['status'] ?? 'ไม่ระบุ'), // แสดงสถานะ
-                ),
-              );
-            },
+          Expanded(
+            child: ListView.builder(
+              itemCount: _itemList.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text('Item: ${_itemList[index]['itemName']}'),
+                  subtitle: Text('Status: ${_itemList[index]['status']}'),
+                  // รายละเอียดเพิ่มเติมที่ต้องการแสดง
+                );
+              },
+            ),
           ),
-        ),
-      ],
-    ),
-    bottomNavigationBar: BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'หน้าแรก',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.call_received_outlined),
-          label: 'รับสินค้า',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.delivery_dining),
-          label: 'เช็คการส่ง',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'โปรไฟล์',
-        ),
-      ],
-      currentIndex: _selectedIndex,
-      selectedItemColor: Colors.purple,
-      onTap: _onItemTapped,
-      backgroundColor: const Color.fromARGB(255, 56, 238, 15),
-      unselectedItemColor: Colors.grey,
-    ),
-  );
-}
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'หน้าแรก',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.call_received_outlined),
+            label: 'รับสินค้า',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.delivery_dining),
+            label: 'เช็คการส่ง',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'โปรไฟล์',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.green,
+        onTap: _onItemTapped,
+        backgroundColor: Colors.white,
+        unselectedItemColor: Colors.grey,
+      ),
+    );
+  }
 }

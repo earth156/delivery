@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:delivery/model/ShowUser.dart';
-import 'package:delivery/pages/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -26,12 +25,12 @@ class _CreateSendPageState extends State<CreateSendPage> {
   List<ShowUser> _contactList = [];
   List<ShowUser> _filteredContacts = [];
   final ImagePicker _picker = ImagePicker();
-  XFile? _image; // ตัวแปรสำหรับเก็บภาพที่เลือก
+  XFile? _image;
 
   @override
   void initState() {
     super.initState();
-    fetchContacts(); 
+    fetchContacts();
   }
 
   Future<void> fetchContacts() async {
@@ -40,7 +39,7 @@ class _CreateSendPageState extends State<CreateSendPage> {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
-        
+
         if (jsonResponse.containsKey('users')) {
           List<dynamic> data = jsonResponse['users'];
           setState(() {
@@ -48,17 +47,15 @@ class _CreateSendPageState extends State<CreateSendPage> {
                 .map<ShowUser>((json) => ShowUser.fromJson(json))
                 .where((user) => user.userId.toString() != widget.userId)
                 .toList();
-            _filteredContacts = _contactList; // ตั้งค่าเริ่มต้น
+            _filteredContacts = _contactList;
           });
         } else {
           throw Exception('ไม่พบคีย์ "users" ในการตอบกลับ');
         }
       } else {
-        print('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ติดต่อ: ${response.body}');
         throw Exception('ไม่สามารถโหลดข้อมูลผู้ติดต่อได้ รหัสสถานะ: ${response.statusCode}');
       }
     } catch (error) {
-      print('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ติดต่อ: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ติดต่อ: $error')),
       );
@@ -66,34 +63,28 @@ class _CreateSendPageState extends State<CreateSendPage> {
   }
 
   void _filterContacts(String query) {
-    if (query.isEmpty) {
-      setState(() {
-        _filteredContacts = _contactList;
-      });
-    } else {
-      setState(() {
-        _filteredContacts = _contactList.where((contact) {
-          return contact.name.contains(query) || contact.phone.contains(query);
-        }).toList();
-      });
-    }
+    setState(() {
+      _filteredContacts = query.isEmpty
+          ? _contactList
+          : _contactList.where((contact) {
+              return contact.name.contains(query) || contact.phone.contains(query);
+            }).toList();
+    });
   }
 
   Future<void> _pickImage() async {
-    // เลือกภาพจากแกลเลอรี่
     _image = await _picker.pickImage(source: ImageSource.gallery);
     if (_image != null) {
       log('Selected image: ${_image!.path}');
-      setState(() {}); // อัปเดต UI
+      setState(() {});
     }
   }
 
   Future<void> _takePhoto() async {
-    // ถ่ายภาพจากกล้อง
     _image = await _picker.pickImage(source: ImageSource.camera);
     if (_image != null) {
       log('Captured image: ${_image!.path}');
-      setState(() {}); // อัปเดต UI
+      setState(() {});
     }
   }
 
@@ -101,7 +92,8 @@ class _CreateSendPageState extends State<CreateSendPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('สร้างรายการส่งสินค้า'),
+        title: const Text('สร้างรายการส่งสินค้า', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        backgroundColor: const Color.fromARGB(255, 56, 238, 15),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -109,173 +101,152 @@ class _CreateSendPageState extends State<CreateSendPage> {
           children: [
             const SizedBox(height: 20.0),
             const Text(
-              'กรอกข้อมูลผู้รับและรายละเอียดสินค้า',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.purple,
-              ),
+              'สร้างการส่งสินค้า',
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.purpleAccent),
             ),
             const SizedBox(height: 20.0),
-            Text(
-              'User ID ของคุณ: ${widget.userId}', 
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 20.0),
-            TextField(
+            _buildInputField(
               controller: _recipientPhoneController,
-              decoration: const InputDecoration(
-                labelText: 'ค้นหาผู้รับ (ชื่อ/เบอร์โทร)',
-                border: OutlineInputBorder(),
-              ),
+              label: 'ค้นหาผู้รับ (ชื่อ/เบอร์โทร)',
               onChanged: (value) => _filterContacts(value),
-              keyboardType: TextInputType.text,
+              icon: Icons.search,
             ),
             const SizedBox(height: 20.0),
-            ListView.builder(
-              itemCount: _filteredContacts.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                final contact = _filteredContacts[index];
-                return ListTile(
-                  title: Text('${contact.name} - ${contact.phone}'),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(contact.address),
-                      Text('User ID: ${contact.userId}'), 
-                    ],
-                  ),
-                  onTap: () {
-                    _recipientIdController.text = contact.userId.toString(); 
-                    _recipientNameController.text = contact.name;
-                    _recipientAddressController.text = contact.address;
-                    _recipientPhoneController.text = contact.phone;
-                  },
-                );
-              },
-            ),
+            _buildContactList(),
             const SizedBox(height: 20.0),
-            TextField(
-              controller: _recipientNameController,
-              decoration: const InputDecoration(
-                labelText: 'ชื่อผู้รับ',
-                border: OutlineInputBorder(),
-              ),
-            ),
+            _buildInputField(controller: _recipientNameController, label: 'ชื่อผู้รับ', icon: Icons.person),
             const SizedBox(height: 20.0),
-            TextField(
-              controller: _recipientAddressController,
-              decoration: const InputDecoration(
-                labelText: 'ที่อยู่ผู้รับ',
-                border: OutlineInputBorder(),
-              ),
-            ),
+            _buildInputField(controller: _recipientAddressController, label: 'ที่อยู่ผู้รับ', icon: Icons.location_on),
             const SizedBox(height: 20.0),
-            TextField(
-              controller: _productDetailsController,
-              decoration: const InputDecoration(
-                labelText: 'รายละเอียดสินค้า',
-                border: OutlineInputBorder(),
-              ),
-            ),
+            _buildInputField(controller: _productDetailsController, label: 'รายละเอียดสินค้า', icon: Icons.description),
             const SizedBox(height: 20.0),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                ElevatedButton(
-                  onPressed: _pickImage, // เรียกใช้ฟังก์ชันเลือกภาพจากแกลเลอรี่
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.purple,
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                  ),
-                  child: const Text(
-                    'เลือกภาพจากแกลเลอรี่',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: _takePhoto, // เรียกใช้ฟังก์ชันถ่ายภาพ
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-                  ),
-                  child: const Text(
-                    'ถ่ายภาพ',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
+                _buildImagePickerButton(onPressed: _pickImage, icon: Icons.photo_library, color: Colors.purple, tooltip: 'เลือกภาพจากแกลเลอรี่'),
+                _buildImagePickerButton(onPressed: _takePhoto, icon: Icons.camera_alt, color: Colors.blue, tooltip: 'ถ่ายภาพ'),
               ],
             ),
             const SizedBox(height: 20.0),
-            // แสดงภาพที่เลือก
-            if (_image != null) 
-              Column(
-                children: [
-                  Image.file(
-                    File(_image!.path),
-                    width: 200,
-                    height: 200,
-                  ),
-                  const SizedBox(height: 10),
-                  Text('Path: ${_image!.path}'),
-                ],
-              ),
+            if (_image != null) _buildImagePreview(),
             const SizedBox(height: 20.0),
             ElevatedButton(
-              onPressed: () async {
-                String recipientId = _recipientIdController.text; 
-                String recipientName = _recipientNameController.text;
-                String recipientAddress = _recipientAddressController.text;
-                String recipientPhone = _recipientPhoneController.text;
-                String productDetails = _productDetailsController.text;
-
-                try {
-                  final response = await http.post(
-                    Uri.parse('https://appdeli.onrender.com/insertProduct/${widget.userId}/$recipientId'),
-                    headers: {'Content-Type': 'application/json'},
-                    body: json.encode({
-                      'details': productDetails,
-                      // คุณสามารถส่ง path ของภาพที่เลือกได้ถ้าต้องการ
-                      'imagePath': _image?.path, // ส่ง path ของภาพที่เลือก
-                    }),
-                  );
-
-                  if (response.statusCode == 201) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('สร้างรายการส่งสินค้าสำเร็จ: $recipientName')),
-                    );
-
-                    Navigator.pop(context);
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('เกิดข้อผิดพลาดในการสร้างรายการ: ${response.body}')),
-                    );
-                  }
-                } catch (error) {
-                  print('Error sending product: $error');
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('เกิดข้อผิดพลาดในการส่งข้อมูล: $error')),
-                  );
-                }
-              },
+              onPressed: _onSubmit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 padding: const EdgeInsets.symmetric(horizontal: 60.0, vertical: 15.0),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
               ),
               child: const Text(
                 'ยืนยันการสร้าง',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Colors.white, fontSize: 18),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    Function(String)? onChanged,
+  }) {
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.purple),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.0)),
+        filled: true,
+        fillColor: Colors.purple.shade50,
+      ),
+      onChanged: onChanged,
+      keyboardType: TextInputType.text,
+    );
+  }
+
+  Widget _buildContactList() {
+    return ListView.builder(
+      itemCount: _filteredContacts.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        final contact = _filteredContacts[index];
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 5.0),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+          child: ListTile(
+            leading: const Icon(Icons.person, color: Colors.purple),
+            title: Text('${contact.name} - ${contact.phone}'),
+            subtitle: Text(contact.address),
+            onTap: () {
+              _recipientIdController.text = contact.userId.toString();
+              _recipientNameController.text = contact.name;
+              _recipientAddressController.text = contact.address;
+              _recipientPhoneController.text = contact.phone;
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildImagePickerButton({required void Function() onPressed, required IconData icon, required Color color, required String tooltip}) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: Icon(icon, color: color, size: 36.0),
+      tooltip: tooltip,
+    );
+  }
+
+  Widget _buildImagePreview() {
+    return Column(
+      children: [
+        Image.file(
+          File(_image!.path),
+          width: 200,
+          height: 200,
+        ),
+        const SizedBox(height: 10),
+        Text('Path: ${_image!.path}'),
+      ],
+    );
+  }
+
+  Future<void> _onSubmit() async {
+    String recipientId = _recipientIdController.text;
+    String recipientName = _recipientNameController.text;
+    String recipientAddress = _recipientAddressController.text;
+    String recipientPhone = _recipientPhoneController.text;
+    String productDetails = _productDetailsController.text;
+
+    try {
+      final response = await http.post(
+        Uri.parse('https://appdeli.onrender.com/insertProduct/${widget.userId}/$recipientId'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'details': productDetails,
+          'imagePath': _image?.path,
+        }),
+      );
+
+      if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('สร้างรายการส่งสินค้าสำเร็จ: $recipientName')),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('เกิดข้อผิดพลาดในการสร้างรายการ: ${response.body}')),
+        );
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('เกิดข้อผิดพลาดในการส่งข้อมูล: $error')),
+      );
+    }
   }
 }

@@ -3,7 +3,7 @@ import 'package:delivery/pages/checkrider.dart';
 import 'package:delivery/pages/login.dart';
 import 'package:delivery/pages/profile.dart';
 import 'package:delivery/pages/receive.dart';
-import 'package:delivery/pages/ShowProSend.dart'; // เพิ่มการนำเข้า ShowProSend
+import 'package:delivery/pages/ShowProSend.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -24,7 +24,7 @@ class _UserSendPageState extends State<UserSendPage> {
   @override
   void initState() {
     super.initState();
-    _fetchSentItems(); // เรียกใช้ฟังก์ชันเมื่อเข้ามาครั้งแรก
+    _fetchSentItems();
   }
 
   Future<void> _fetchSentItems() async {
@@ -33,7 +33,7 @@ class _UserSendPageState extends State<UserSendPage> {
 
       if (response.statusCode == 200) {
         setState(() {
-          _itemList.clear(); // รีเซ็ตข้อมูลก่อนเพิ่ม
+          _itemList.clear();
           _itemList.addAll(json.decode(response.body));
         });
       } else {
@@ -55,17 +55,17 @@ class _UserSendPageState extends State<UserSendPage> {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => CheckRiderPage(userId: widget.userId)),
-      ).then((_) => _fetchSentItems()); // รีเฟรชเมื่อกลับมาที่หน้า UserSendPage
+      ).then((_) => _fetchSentItems());
     } else if (index == 3) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => ProfilePage(userId: widget.userId)),
-      ).then((_) => _fetchSentItems()); // รีเฟรชเมื่อกลับมาที่หน้า UserSendPage
+      ).then((_) => _fetchSentItems());
     } else if (index == 1) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => ReceivePage(userId: widget.userId)),
-      ).then((_) => _fetchSentItems()); // รีเฟรชเมื่อกลับมาที่หน้า UserSendPage
+      ).then((_) => _fetchSentItems());
     }
   }
 
@@ -73,18 +73,17 @@ class _UserSendPageState extends State<UserSendPage> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => CreateSendPage(userId: widget.userId)),
-    ).then((_) => _fetchSentItems()); // รีเฟรชเมื่อกลับมาที่หน้า UserSendPage
+    ).then((_) => _fetchSentItems());
   }
 
   void _goToShowProSendPage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => ShowProSend(userId: widget.userId)), // นำทางไปยังหน้า ShowProSend
+      MaterialPageRoute(builder: (context) => ShowProSend(userId: widget.userId)),
     );
   }
 
   void _logout() {
-    // นำทางไปยังหน้า LoginPage
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -97,13 +96,13 @@ class _UserSendPageState extends State<UserSendPage> {
       appBar: AppBar(
         title: const Text(
           'Delivery',
-          style: TextStyle(color: Colors.purple),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color.fromARGB(255, 56, 238, 15),
+        backgroundColor:  const Color.fromARGB(255, 56, 238, 15),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout), // ใช้ icon logout
-            onPressed: _logout, // เรียกฟังก์ชัน logout
+            icon: const Icon(Icons.logout, color: Colors.white),
+            onPressed: _logout,
           ),
         ],
       ),
@@ -114,75 +113,89 @@ class _UserSendPageState extends State<UserSendPage> {
             const Text(
               'รายการส่งสินค้า',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
-                color: Colors.purple,
+                color: Colors.greenAccent,
               ),
             ),
-            const SizedBox(height: 16.0), // Space between title and list
+            const SizedBox(height: 20.0),
             Expanded(
               child: ListView.builder(
                 itemCount: _itemList.length,
                 itemBuilder: (context, index) {
                   final item = _itemList[index];
                   return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    elevation: 3,
+                    margin: const EdgeInsets.symmetric(vertical: 10.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
+                    ),
                     child: ListTile(
-                      title: Text(item['details'] ?? 'ไม่มีรายละเอียด',
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      title: Text(
+                        item['details'] ?? 'ไม่มีรายละเอียด',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          const SizedBox(height: 6),
                           Text(
                             'ผู้รับ: ${item['user_receive_name'] ?? 'ไม่ระบุ'}',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black54,
+                            ),
                           ),
                           Text(
                             'ที่อยู่: ${item['user_receive_address'] ?? 'ไม่ระบุ'}',
-                            style: const TextStyle(color: Colors.grey),
+                            style: const TextStyle(
+                              color: Colors.black38,
+                            ),
                           ),
                           Text(
-                            'สถานะ: ${item['status'] ?? 'ไม่ระบุ'}', // เพิ่มการแสดงสถานะ
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                            'สถานะ: ${item['status'] ?? 'ไม่ระบุ'}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.blueAccent,
+                            ),
                           ),
                         ],
                       ),
-                      leading: const Icon(Icons.local_shipping, color: Colors.purple),
+                      leading: const Icon(Icons.local_shipping, color: Color.fromARGB(255, 56, 238, 15),),
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 16.0), // Space between list and button
-            ElevatedButton(
-              onPressed: _goToCreateSendPage,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 60.0, vertical: 15.0),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30)),
-              ),
-              child: const Text(
-                'สร้างรายการส่ง',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            ),
-            const SizedBox(height: 16.0), // Space between create button and show button
-            ElevatedButton(
-              onPressed: _goToShowProSendPage, // เรียกฟังก์ชันเพื่อไปยังหน้า ShowProSend
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 60.0, vertical: 15.0),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30)),
-              ),
-              child: const Text(
-                'แสดงพิกัดผู้รับ',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
+            const SizedBox(height: 20.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                FloatingActionButton.extended(
+                  onPressed: _goToCreateSendPage,
+                  label: const Text('สร้างรายการ'),
+                  icon: const Icon(Icons.edit),
+                  backgroundColor: Colors.purple,
+                ),
+                ElevatedButton(
+                  onPressed: _goToShowProSendPage,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 12.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
+                  ),
+                  child: const Text(
+                    'แสดงพิกัดผู้รับ',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -208,9 +221,9 @@ class _UserSendPageState extends State<UserSendPage> {
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.purple,
+        selectedItemColor:  const Color.fromARGB(255, 56, 238, 15),
         onTap: _onItemTapped,
-        backgroundColor: const Color.fromARGB(255, 56, 238, 15),
+        backgroundColor: Colors.white,
         unselectedItemColor: Colors.grey,
       ),
     );

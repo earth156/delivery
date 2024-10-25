@@ -80,8 +80,6 @@ class _RegisCutPageState extends State<RegisCutPage> {
     request.fields['password'] = password;
     request.fields['address'] = address;
     request.fields['gps'] = coordinates;
-    request.fields['car_reg'] = ''; // สามารถปรับเปลี่ยนตามความต้องการ
-    request.fields['type'] = phone.isNotEmpty ? 'user' : 'rider';
 
     // ถ้ามีไฟล์โปรไฟล์ที่เลือกให้เพิ่มลงใน request
     if (_profileImage != null) {

@@ -1,8 +1,11 @@
+import 'dart:developer';
+import 'dart:io';
 import 'package:delivery/model/ShowUser.dart';
 import 'package:delivery/pages/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:image_picker/image_picker.dart';
 
 class CreateSendPage extends StatefulWidget {
   final String userId;
@@ -22,6 +25,8 @@ class _CreateSendPageState extends State<CreateSendPage> {
 
   List<ShowUser> _contactList = [];
   List<ShowUser> _filteredContacts = [];
+  final ImagePicker _picker = ImagePicker();
+  XFile? _image; // ตัวแปรสำหรับเก็บภาพที่เลือก
 
   @override
   void initState() {
@@ -41,7 +46,7 @@ class _CreateSendPageState extends State<CreateSendPage> {
           setState(() {
             _contactList = data
                 .map<ShowUser>((json) => ShowUser.fromJson(json))
-                .where((user) => user.userId.toString() != widget.userId) // ไม่รวม userId ของตัวเอง
+                .where((user) => user.userId.toString() != widget.userId)
                 .toList();
             _filteredContacts = _contactList; // ตั้งค่าเริ่มต้น
           });
@@ -71,6 +76,15 @@ class _CreateSendPageState extends State<CreateSendPage> {
           return contact.name.contains(query) || contact.phone.contains(query);
         }).toList();
       });
+    }
+  }
+
+  Future<void> _pickImage() async {
+    // เลือกภาพจากแกลเลอรี่
+    _image = await _picker.pickImage(source: ImageSource.gallery);
+    if (_image != null) {
+      log('Selected image: ${_image!.path}');
+      setState(() {}); // อัปเดต UI
     }
   }
 
@@ -163,27 +177,34 @@ class _CreateSendPageState extends State<CreateSendPage> {
             ),
             const SizedBox(height: 20.0),
             ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CameraPage(userId: widget.userId), // ส่ง userId
-                  ),
-                );
-              },
+              onPressed: _pickImage, // เรียกใช้ฟังก์ชันเลือกภาพ
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.purple,
                 padding: const EdgeInsets.symmetric(horizontal: 60.0, vertical: 15.0),
               ),
               child: const Text(
-                'เพิ่มรูปภาพสินค้า',
+                'เลือกภาพสินค้า',
                 style: TextStyle(color: Colors.white),
               ),
             ),
             const SizedBox(height: 20.0),
+            // แสดงภาพที่เลือก
+            if (_image != null) 
+              Column(
+                children: [
+                  Image.file(
+                    File(_image!.path),
+                    width: 200,
+                    height: 200,
+                  ),
+                  const SizedBox(height: 10),
+                  Text('Path: ${_image!.path}'),
+                ],
+              ),
+            const SizedBox(height: 20.0),
             ElevatedButton(
               onPressed: () async {
-                String recipientId = _recipientIdController.text; // ดึง recipientId
+                String recipientId = _recipientIdController.text; 
                 String recipientName = _recipientNameController.text;
                 String recipientAddress = _recipientAddressController.text;
                 String recipientPhone = _recipientPhoneController.text;
@@ -191,10 +212,12 @@ class _CreateSendPageState extends State<CreateSendPage> {
 
                 try {
                   final response = await http.post(
-                    Uri.parse('https://appdeli.onrender.com/insertProduct/${widget.userId}/$recipientId'), // ส่ง userId และ recipientId
+                    Uri.parse('https://appdeli.onrender.com/insertProduct/${widget.userId}/$recipientId'),
                     headers: {'Content-Type': 'application/json'},
                     body: json.encode({
-                      'details': productDetails, // ส่งรายละเอียดสินค้า
+                      'details': productDetails,
+                      // คุณสามารถส่ง path ของภาพที่เลือกได้ถ้าต้องการ
+                      'imagePath': _image?.path, // ส่ง path ของภาพที่เลือก
                     }),
                   );
 
@@ -203,7 +226,6 @@ class _CreateSendPageState extends State<CreateSendPage> {
                       SnackBar(content: Text('สร้างรายการส่งสินค้าสำเร็จ: $recipientName')),
                     );
 
-                    // กลับไปที่หน้า UserSendPage
                     Navigator.pop(context);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(

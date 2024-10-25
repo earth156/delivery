@@ -17,7 +17,7 @@ class CreateSendPage extends StatefulWidget {
 }
 
 class _CreateSendPageState extends State<CreateSendPage> {
-  final TextEditingController _recipientIdController = TextEditingController(); 
+  final TextEditingController _recipientIdController = TextEditingController();
   final TextEditingController _recipientNameController = TextEditingController();
   final TextEditingController _recipientAddressController = TextEditingController();
   final TextEditingController _recipientPhoneController = TextEditingController();
@@ -84,6 +84,15 @@ class _CreateSendPageState extends State<CreateSendPage> {
     _image = await _picker.pickImage(source: ImageSource.gallery);
     if (_image != null) {
       log('Selected image: ${_image!.path}');
+      setState(() {}); // อัปเดต UI
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    // ถ่ายภาพจากกล้อง
+    _image = await _picker.pickImage(source: ImageSource.camera);
+    if (_image != null) {
+      log('Captured image: ${_image!.path}');
       setState(() {}); // อัปเดต UI
     }
   }
@@ -176,16 +185,32 @@ class _CreateSendPageState extends State<CreateSendPage> {
               ),
             ),
             const SizedBox(height: 20.0),
-            ElevatedButton(
-              onPressed: _pickImage, // เรียกใช้ฟังก์ชันเลือกภาพ
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.purple,
-                padding: const EdgeInsets.symmetric(horizontal: 60.0, vertical: 15.0),
-              ),
-              child: const Text(
-                'เลือกภาพสินค้า',
-                style: TextStyle(color: Colors.white),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: _pickImage, // เรียกใช้ฟังก์ชันเลือกภาพจากแกลเลอรี่
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  ),
+                  child: const Text(
+                    'เลือกภาพจากแกลเลอรี่',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: _takePhoto, // เรียกใช้ฟังก์ชันถ่ายภาพ
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  ),
+                  child: const Text(
+                    'ถ่ายภาพ',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 20.0),
             // แสดงภาพที่เลือก

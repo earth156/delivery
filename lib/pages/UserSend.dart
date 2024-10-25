@@ -3,6 +3,7 @@ import 'package:delivery/pages/checkrider.dart';
 import 'package:delivery/pages/login.dart';
 import 'package:delivery/pages/profile.dart';
 import 'package:delivery/pages/receive.dart';
+import 'package:delivery/pages/ShowProSend.dart'; // เพิ่มการนำเข้า ShowProSend
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -73,6 +74,13 @@ class _UserSendPageState extends State<UserSendPage> {
       context,
       MaterialPageRoute(builder: (context) => CreateSendPage(userId: widget.userId)),
     ).then((_) => _fetchSentItems()); // รีเฟรชเมื่อกลับมาที่หน้า UserSendPage
+  }
+
+  void _goToShowProSendPage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ShowProSend(userId: widget.userId)), // นำทางไปยังหน้า ShowProSend
+    );
   }
 
   void _logout() {
@@ -158,6 +166,21 @@ class _UserSendPageState extends State<UserSendPage> {
               ),
               child: const Text(
                 'สร้างรายการส่ง',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
+            const SizedBox(height: 16.0), // Space between create button and show button
+            ElevatedButton(
+              onPressed: _goToShowProSendPage, // เรียกฟังก์ชันเพื่อไปยังหน้า ShowProSend
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green,
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 60.0, vertical: 15.0),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30)),
+              ),
+              child: const Text(
+                'แสดงพิกัดผู้รับ',
                 style: TextStyle(color: Colors.white, fontSize: 16),
               ),
             ),

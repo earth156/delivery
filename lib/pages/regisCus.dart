@@ -20,7 +20,7 @@ class _RegisCutPageState extends State<RegisCutPage> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   final TextEditingController _addressController = TextEditingController();
   final TextEditingController _coordinatesController = TextEditingController();
-
+  
   String? _profileImage; // ตัวแปรสำหรับเก็บ path ของรูปโปรไฟล์
 
   Future<void> _register() async {
@@ -68,36 +68,31 @@ class _RegisCutPageState extends State<RegisCutPage> {
       return;
     }
 
-    // สร้าง request
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('https://appdeli.onrender.com/register'),
-    );
+    // สร้างข้อมูลสำหรับการลงทะเบียน
+    Map<String, dynamic> data = {
+      'name': name,
+      'phone': phone,
+      'password': password,
+      'address': address,
+      'gps': coordinates,
+      'profile': _profileImage, // ส่ง URL รูปโปรไฟล์ไปด้วย
+      'car_reg': null,
+      'type': phone.isNotEmpty ? 'user' : 'rider',
+    };
 
-    // เพิ่มข้อมูลลงใน request
-    request.fields['name'] = name;
-    request.fields['phone'] = phone;
-    request.fields['password'] = password;
-    request.fields['address'] = address;
-    request.fields['gps'] = coordinates;
-
-    // ถ้ามีไฟล์โปรไฟล์ที่เลือกให้เพิ่มลงใน request
-    if (_profileImage != null) {
-      request.files.add(await http.MultipartFile.fromPath('profile', _profileImage!));
-    }
-
-    // ทำการส่ง request
+    // ทำ POST request เพื่อลงทะเบียนผู้ใช้
     try {
-      final response = await request.send();
+      final response = await http.post(
+        Uri.parse('https://appdeli.onrender.com/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(data),
+      );
 
       if (response.statusCode == 200) {
-        final responseData = await response.stream.bytesToString();
-        print(responseData); // แสดงผลการตอบกลับ
         _showSuccessDialog(); // แสดงกล่องข้อความสมัครสมาชิกสำเร็จ
         _clearFields(); // เคลียร์ฟิลด์หลังจากลงทะเบียนสำเร็จ
       } else {
-        final responseData = await response.stream.bytesToString();
-        throw Exception('ไม่สามารถลงทะเบียนผู้ใช้ได้: $responseData');
+        throw Exception('ไม่สามารถลงทะเบียนผู้ใช้ได้');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -180,58 +175,101 @@ class _RegisCutPageState extends State<RegisCutPage> {
           children: [
             const SizedBox(height: 20.0),
             const Text(
-              'กรอกข้อมูลสมาชิก',
-              style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20.0),
-            GestureDetector(
-              onTap: _onProfileImageTap,
-              child: Container(
-                height: 100,
-                width: 100,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: _profileImage != null
-                    ? ClipOval(
-                        child: Image.file(
-                          File(_profileImage!),
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                    : const Icon(Icons.camera_alt, size: 50),
+              'กรอกข้อมูลสมัครสมาชิก',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.purple,
               ),
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 20.0),
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'ชื่อ'),
+              decoration: const InputDecoration(
+                labelText: 'ชื่อ',
+                border: OutlineInputBorder(),
+              ),
             ),
+            const SizedBox(height: 10.0),
             TextField(
               controller: _phoneController,
-              decoration: const InputDecoration(labelText: 'หมายเลขโทรศัพท์'),
+              decoration: const InputDecoration(
+                labelText: 'เบอร์โทรศัพท์',
+                border: OutlineInputBorder(),
+              ),
               keyboardType: TextInputType.phone,
             ),
+            const SizedBox(height: 10.0),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'รหัสผ่าน'),
+              decoration: const InputDecoration(
+                labelText: 'รหัสผ่าน',
+                border: OutlineInputBorder(),
+              ),
               obscureText: true,
             ),
+            const SizedBox(height: 10.0),
             TextField(
               controller: _confirmPasswordController,
-              decoration: const InputDecoration(labelText: 'ยืนยันรหัสผ่าน'),
+              decoration: const InputDecoration(
+                labelText: 'ยืนยันรหัสผ่าน',
+                border: OutlineInputBorder(),
+              ),
               obscureText: true,
             ),
+            const SizedBox(height: 10.0),
             TextField(
               controller: _addressController,
-              decoration: const InputDecoration(labelText: 'ที่อยู่'),
+              decoration: const InputDecoration(
+                labelText: 'ที่อยู่',
+                border: OutlineInputBorder(),
+              ),
             ),
-            TextField(
-              controller: _coordinatesController,
-              decoration: const InputDecoration(labelText: 'พิกัด GPS (ละติจูด, ลองจิจูด)'),
-              readOnly: true,
-              onTap: _onMapIconPressed,
+            const SizedBox(height: 10.0),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _coordinatesController,
+                    decoration: const InputDecoration(
+                      labelText: 'พิกัด (latitude, longitude)',
+                      border: OutlineInputBorder(),
+                    ),
+                    readOnly: true,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.map),
+                  onPressed: _onMapIconPressed, // เรียกฟังก์ชันแสดงแผนที่
+                ),
+              ],
+            ),
+            const SizedBox(height: 20.0),
+            // ช่องสำหรับรูปโปรไฟล์
+            GestureDetector(
+              onTap: _onProfileImageTap, // เรียกฟังก์ชันเมื่อคลิก
+              child: ClipOval(
+                child: Container(
+                  width: 100.0,
+                  height: 100.0,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    image: _profileImage != null
+                        ? DecorationImage(
+                            image: FileImage(File(_profileImage!)),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: _profileImage == null
+                      ? const Icon(
+                          Icons.add_a_photo,
+                          size: 50,
+                          color: Colors.white,
+                        )
+                      : null,
+                ),
+              ),
             ),
             const SizedBox(height: 20.0),
             ElevatedButton(

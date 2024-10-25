@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-
 class CreateSendPage extends StatefulWidget {
   final String userId;
 
@@ -32,7 +31,7 @@ class _CreateSendPageState extends State<CreateSendPage> {
 
   Future<void> fetchContacts() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.122.196:3000/showUser'));
+      final response = await http.get(Uri.parse('https://appdeli.onrender.com/showUser'));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> jsonResponse = jsonDecode(response.body);
@@ -40,18 +39,21 @@ class _CreateSendPageState extends State<CreateSendPage> {
         if (jsonResponse.containsKey('users')) {
           List<dynamic> data = jsonResponse['users'];
           setState(() {
-            _contactList = data.map<ShowUser>((json) => ShowUser.fromJson(json)).toList();
-            _filteredContacts = _contactList;
+            _contactList = data
+                .map<ShowUser>((json) => ShowUser.fromJson(json))
+                .where((user) => user.userId.toString() != widget.userId) // ไม่รวม userId ของตัวเอง
+                .toList();
+            _filteredContacts = _contactList; // ตั้งค่าเริ่มต้น
           });
         } else {
-          throw Exception('Key "users" not found in response');
+          throw Exception('ไม่พบคีย์ "users" ในการตอบกลับ');
         }
       } else {
-        print('Error fetching contacts: ${response.body}');
-        throw Exception('Failed to load contacts. Status code: ${response.statusCode}');
+        print('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ติดต่อ: ${response.body}');
+        throw Exception('ไม่สามารถโหลดข้อมูลผู้ติดต่อได้ รหัสสถานะ: ${response.statusCode}');
       }
     } catch (error) {
-      print('Error fetching contacts: $error');
+      print('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ติดต่อ: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('เกิดข้อผิดพลาดในการดึงข้อมูลผู้ติดต่อ: $error')),
       );
@@ -189,7 +191,7 @@ class _CreateSendPageState extends State<CreateSendPage> {
 
                 try {
                   final response = await http.post(
-                    Uri.parse('http://192.168.122.196:3000/insertProduct/${widget.userId}/$recipientId'), // ส่ง userId และ recipientId
+                    Uri.parse('https://appdeli.onrender.com/insertProduct/${widget.userId}/$recipientId'), // ส่ง userId และ recipientId
                     headers: {'Content-Type': 'application/json'},
                     body: json.encode({
                       'details': productDetails, // ส่งรายละเอียดสินค้า
@@ -200,6 +202,9 @@ class _CreateSendPageState extends State<CreateSendPage> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('สร้างรายการส่งสินค้าสำเร็จ: $recipientName')),
                     );
+
+                    // กลับไปที่หน้า UserSendPage
+                    Navigator.pop(context);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('เกิดข้อผิดพลาดในการสร้างรายการ: ${response.body}')),

@@ -58,7 +58,7 @@ class _RegisRiderPageState extends State<RegisRiderPage> {
     // ตรวจสอบเบอร์โทรศัพท์ว่ามีอยู่ในระบบหรือไม่
     try {
       final checkResponse = await http.get(
-        Uri.parse('http://192.168.122.196:3000/checkPhone?phone=$phone'),
+        Uri.parse('https://appdeli.onrender.com/checkPhone?phone=$phone'),
       );
 
       if (checkResponse.statusCode == 409) {
@@ -83,7 +83,7 @@ class _RegisRiderPageState extends State<RegisRiderPage> {
     // ทำ POST request
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.122.196:3000/registerrider'), // เปลี่ยนเป็น URL ของ API ของคุณ
+        Uri.parse('https://appdeli.onrender.com/registerrider'), // เปลี่ยนเป็น URL ของ API ของคุณ
         headers: {'Content-Type': 'application/json'},
         body: json.encode(data),
       );

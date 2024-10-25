@@ -27,7 +27,7 @@ class _ReceivePageState extends State<ReceivePage> {
 
   Future<void> _fetchReceivedItems() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.122.196:3000/showProReceive/${widget.userId}'));
+      final response = await http.get(Uri.parse('https://appdeli.onrender.com/showProReceive/${widget.userId}'));
       if (response.statusCode == 200) {
         setState(() {
           _itemList.addAll(json.decode(response.body));

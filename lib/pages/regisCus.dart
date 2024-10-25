@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:latlong2/latlong.dart';
@@ -50,7 +49,7 @@ class _RegisCutPageState extends State<RegisCutPage> {
     // ตรวจสอบเบอร์โทรศัพท์ว่ามีอยู่ในระบบหรือไม่
     try {
       final checkResponse = await http.get(
-        Uri.parse('http://192.168.122.196:3000/checkPhone?phone=$phone'),
+        Uri.parse('https://appdeli.onrender.com/checkPhone?phone=$phone'),
       );
 
       if (checkResponse.statusCode == 409) {
@@ -83,7 +82,7 @@ class _RegisCutPageState extends State<RegisCutPage> {
     // ทำ POST request เพื่อลงทะเบียนผู้ใช้
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.122.196:3000/register'),
+        Uri.parse('https://appdeli.onrender.com/register'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode(data),
       );

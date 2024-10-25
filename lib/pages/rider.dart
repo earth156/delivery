@@ -1,3 +1,4 @@
+import 'package:delivery/pages/list_order.dart';
 import 'package:flutter/material.dart';
 import 'package:delivery/pages/rider_map.dart'; // นำเข้าหน้า RiderMapPage
 
@@ -31,7 +32,7 @@ class _RiderPageState extends State<RiderPage> {
                 // เมื่อกดปุ่ม จะนำไปยังหน้า RiderMapPage
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) =>  RiderMapPage(userId: widget.userId)), // สร้างหน้า RiderMapPage
+                  MaterialPageRoute(builder: (context) =>  ListOrderPage(userId: widget.userId)), // สร้างหน้า RiderMapPage
                 );
               },
               child: const Text('เริ่มงาน'), // ข้อความในปุ่ม

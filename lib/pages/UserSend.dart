@@ -1,4 +1,3 @@
-
 import 'package:delivery/pages/CreateSend.dart';
 import 'package:delivery/pages/checkrider.dart';
 import 'package:delivery/pages/login.dart';
@@ -24,15 +23,16 @@ class _UserSendPageState extends State<UserSendPage> {
   @override
   void initState() {
     super.initState();
-    _fetchSentItems();
+    _fetchSentItems(); // เรียกใช้ฟังก์ชันเมื่อเข้ามาครั้งแรก
   }
 
   Future<void> _fetchSentItems() async {
     try {
-      final response = await http.get(Uri.parse('http://192.168.122.196:3000/showProsend/${widget.userId}'));
+      final response = await http.get(Uri.parse('https://appdeli.onrender.com/showProsend/${widget.userId}'));
 
       if (response.statusCode == 200) {
         setState(() {
+          _itemList.clear(); // รีเซ็ตข้อมูลก่อนเพิ่ม
           _itemList.addAll(json.decode(response.body));
         });
       } else {
@@ -54,17 +54,17 @@ class _UserSendPageState extends State<UserSendPage> {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => CheckRiderPage(userId: widget.userId)),
-      );
+      ).then((_) => _fetchSentItems()); // รีเฟรชเมื่อกลับมาที่หน้า UserSendPage
     } else if (index == 3) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => ProfilePage(userId: widget.userId)),
-      );
+      ).then((_) => _fetchSentItems()); // รีเฟรชเมื่อกลับมาที่หน้า UserSendPage
     } else if (index == 1) {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => ReceivePage(userId: widget.userId)),
-      );
+      ).then((_) => _fetchSentItems()); // รีเฟรชเมื่อกลับมาที่หน้า UserSendPage
     }
   }
 
@@ -72,7 +72,7 @@ class _UserSendPageState extends State<UserSendPage> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => CreateSendPage(userId: widget.userId)),
-    );
+    ).then((_) => _fetchSentItems()); // รีเฟรชเมื่อกลับมาที่หน้า UserSendPage
   }
 
   void _logout() {
@@ -113,41 +113,39 @@ class _UserSendPageState extends State<UserSendPage> {
             ),
             const SizedBox(height: 16.0), // Space between title and list
             Expanded(
-                    child: ListView.builder(
-                      itemCount: _itemList.length,
-                      itemBuilder: (context, index) {
-                        final item = _itemList[index];
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: ListTile(
-                            title: Text(item['details'] ?? 'ไม่มีรายละเอียด',
-                                style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold)),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'ผู้รับ: ${item['user_receive_name'] ?? 'ไม่ระบุ'}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  'ที่อยู่: ${item['user_receive_address'] ?? 'ไม่ระบุ'}',
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                                Text(
-                                  'สถานะ: ${item['status'] ?? 'ไม่ระบุ'}', // เพิ่มการแสดงสถานะ
-                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
-                                ),
-                              ],
-                            ),
-                            leading:
-                                const Icon(Icons.local_shipping, color: Colors.purple),
+              child: ListView.builder(
+                itemCount: _itemList.length,
+                itemBuilder: (context, index) {
+                  final item = _itemList[index];
+                  return Card(
+                    margin: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: ListTile(
+                      title: Text(item['details'] ?? 'ไม่มีรายละเอียด',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'ผู้รับ: ${item['user_receive_name'] ?? 'ไม่ระบุ'}',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                        );
-                      },
+                          Text(
+                            'ที่อยู่: ${item['user_receive_address'] ?? 'ไม่ระบุ'}',
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                          Text(
+                            'สถานะ: ${item['status'] ?? 'ไม่ระบุ'}', // เพิ่มการแสดงสถานะ
+                            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                          ),
+                        ],
+                      ),
+                      leading: const Icon(Icons.local_shipping, color: Colors.purple),
                     ),
-                  ),
-
+                  );
+                },
+              ),
+            ),
             const SizedBox(height: 16.0), // Space between list and button
             ElevatedButton(
               onPressed: _goToCreateSendPage,

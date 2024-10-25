@@ -114,7 +114,7 @@ class _LoginPageState extends State<LoginPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://192.168.122.196:3000/login'),
+        Uri.parse('https://appdeli.onrender.com/login'),
         headers: {
           'Content-Type': 'application/json',
         },
